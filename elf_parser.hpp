@@ -28,8 +28,28 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <elf.h>
+#include <fcntl.h>
 
 namespace elf_parser {
+
+
+    struct e_ident {
+        unsigned char ei_mag[4];
+        unsigned char ei_class;
+        unsigned char ei_data;
+        unsigned char ei_version;
+        unsigned char ei_pad;
+        unsigned char ei_nident;
+    };
+
+
+    class Elf {
+        public:
+            int8_t load_mmap();
+            void setup(std::string elf_prog_path);
+        private:
+            std::string elf_prog_path; 
+    };
 
 }
 

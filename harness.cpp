@@ -20,29 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 #include "elf_parser.hpp"
 using namespace elf_parser;
 
-
-void Elf::setup(std::string prog_path) {
-    elf_prog_path = prog_path;
-    return;
-}
-
-int8_t Elf::load_mmap() {
-    int fd, i;
-    struct stat st;
-
-    if ((fd = open(elf_prog_path.c_str(), O_RDONLY, 0) < 0)) {
-        printf("ERROR: Could not open file %s\n", elf_prog_path.c_str());
-        return -1;
-    }
-
-    if (fstat(fd, &st) < 0) {
-        printf("ERROR: Could not fstat file %s\n", elf_prog_path.c_str());
-        return -1;
-    }
-
-    return 0;
+int main(void) {
+    Elf elf;
+    std::string prog_path = "test";
+    elf.setup(prog_path);
+    elf.load_mmap();
 }
