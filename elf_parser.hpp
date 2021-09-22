@@ -27,6 +27,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <unistd.h>
 #include <elf.h>
 #include <fcntl.h>
 
@@ -48,7 +49,8 @@ namespace elf_parser {
             int8_t load_mmap();
             void setup(std::string elf_prog_path);
         private:
-            std::string elf_prog_path; 
+            std::string prog_path; 
+            uint8_t* prog_mmap;
     };
 
 }

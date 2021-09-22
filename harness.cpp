@@ -22,10 +22,11 @@
 
 #include "elf_parser.hpp"
 using namespace elf_parser;
+using std::string;
 
 int main(void) {
     Elf elf;
-    std::string prog_path = "test";
+    string prog_path = "test";
     elf.setup(prog_path);
     elf.load_mmap();
 }

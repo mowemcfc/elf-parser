@@ -26,7 +26,7 @@ using namespace elf_parser;
 
 
 void Elf::setup(std::string prog_path) {
-    elf_prog_path = prog_path;
+    Elf::prog_path = prog_path;
     return;
 }
 
@@ -34,13 +34,23 @@ int8_t Elf::load_mmap() {
     int fd, i;
     struct stat st;
 
-    if ((fd = open(elf_prog_path.c_str(), O_RDONLY, 0) < 0)) {
-        printf("ERROR: Could not open file %s\n", elf_prog_path.c_str());
+    if ((fd = open(prog_path.c_str(), O_RDONLY)) < 0) {
+        std::cout << "ERROR: Could not open file " << prog_path << "\n";
+        close(fd);
         return -1;
     }
 
     if (fstat(fd, &st) < 0) {
-        printf("ERROR: Could not fstat file %s\n", elf_prog_path.c_str());
+        std::cout << "ERROR: Could not fstat file " << prog_path << "\n";
+        close(fd);
+        return -1;
+    }
+
+    prog_mmap = static_cast<uint8_t*>(mmap(NULL, (size_t) st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
+
+    if ((unsigned char*) prog_mmap == MAP_FAILED) {
+        std::cout << "ERROR: Failed to initialize memory map for " << prog_path << "\n";
+        close(fd);
         return -1;
     }
 
