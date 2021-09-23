@@ -20,9 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TODO: implement verbosity options in constructor
 
 #include "elf_parser.hpp"
 using namespace elf_parser;
+using namespace std;
 
 
 void Parser::setup(std::string prog_path) {
@@ -64,13 +66,13 @@ int8_t Parser::load_mmap() {
     struct stat st;
 
     if ((fd = open(prog_path.c_str(), O_RDONLY)) < 0) {
-        std::cout << "ERROR: Could not open file " << prog_path << "\n";
+        cout << "ERROR: Could not open file " << prog_path << endl;
         close(fd);
         return -1;
     }
 
     if (fstat(fd, &st) < 0) {
-        std::cout << "ERROR: Could not fstat file " << prog_path << "\n";
+        cout << "ERROR: Could not fstat file " << prog_path << endl;
         close(fd);
         return -1;
     }
@@ -79,7 +81,7 @@ int8_t Parser::load_mmap() {
     prog_mmap = static_cast<uint8_t*>(mmap(NULL, mmap_size, PROT_READ, MAP_PRIVATE, fd, 0));
 
     if ((unsigned char*) prog_mmap == MAP_FAILED) {
-        std::cout << "ERROR: Failed to initialize memory map for " << prog_path << "\n";
+        cout << "ERROR: Failed to initialize memory map for " << prog_path << endl;
         close(fd);
         return -1;
     }
