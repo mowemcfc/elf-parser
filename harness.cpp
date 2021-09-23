@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2018 finixbit
+// Copyright (c) 2021 mowemcfc
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,5 +29,7 @@ int main(void) {
     string prog_path = "test";
     parser.setup(prog_path);
     parser.load_mmap();
+    parser.read_elf_header();
+    parser.get_ei_class();
     parser.cleanup();
 }

@@ -1,6 +1,6 @@
 // MIT License
 
-// Copyright (c) 2018 finixbit
+// Copyright (c) 2021 mowemcfc
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include <fcntl.h>
 
 #define PARSER_VERBOSE 1
-#define PARSER_NONVERBOSE
+#define PARSER_NONVERBOSE 0
 
 namespace elf_parser {
 
