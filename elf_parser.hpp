@@ -39,31 +39,33 @@ namespace elf_parser {
 
     class Parser {
         public:
-            Parser() {
+            // Function signatures
+            int8_t load_mmap(std::string file_path);
+            Elf64_Ehdr* read_elf_header();
+            void read_eident();
+            uint8_t check_ELF64_magic();
+            uint8_t get_ei_class();
+            void setup(std::string elf_prog_path);
+            void cleanup();
+
+            Parser(std::string file_path) {
+                load_mmap(file_path);
                 parser_verbose = 0;
             }
-            Parser(int verbosity) {
+            Parser(std::string file_path, int verbosity) {
+                load_mmap(file_path);
                 parser_verbose = verbosity;
             }
 
             // Class variables
             uint8_t parser_verbose;
 
-            // Function signatures
-            int8_t load_mmap();
-            Elf64_Ehdr* read_elf_header();
-            void read_eident();
-            void check_ELF64_magic();
-            uint8_t get_ei_class();
-            void setup(std::string elf_prog_path);
-            void cleanup();
-
         private:
             uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
-            Elf64_Ehdr* elf_header;
-            std::string prog_path; 
-            uint8_t* prog_mmap;
-            size_t mmap_size;
+            Elf64_Ehdr* p_elf_header;
+            std::string p_file_path; 
+            uint8_t* p_prog_mmap;
+            size_t p_mmap_size;
     };
 
 }

@@ -25,11 +25,10 @@ using namespace elf_parser;
 using std::string;
 
 int main(void) {
-    Parser parser;
     string prog_path = "test";
-    parser.setup(prog_path);
-    parser.load_mmap();
+    Parser parser = Parser(prog_path);
     parser.read_elf_header();
     parser.get_ei_class();
+    parser.check_ELF64_magic();
     parser.cleanup();
 }
