@@ -25,8 +25,8 @@ using namespace elf_parser;
 using std::string;
 
 int main(void) {
-    Elf elf;
+    Parser parser;
     string prog_path = "test";
-    elf.setup(prog_path);
-    elf.load_mmap();
+    parser.setup(prog_path);
+    parser.load_mmap();
 }

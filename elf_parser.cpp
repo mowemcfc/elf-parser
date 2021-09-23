@@ -25,12 +25,18 @@
 using namespace elf_parser;
 
 
-void Elf::setup(std::string prog_path) {
-    Elf::prog_path = prog_path;
+void Parser::setup(std::string prog_path) {
+    Parser::prog_path = prog_path;
     return;
 }
 
-int8_t Elf::load_mmap() {
+
+void Parser::cleanup() {
+    munmap(prog_mmap, mmap_size);
+    return;
+}
+
+int8_t Parser::load_mmap() {
     int fd, i;
     struct stat st;
 
@@ -46,13 +52,18 @@ int8_t Elf::load_mmap() {
         return -1;
     }
 
-    prog_mmap = static_cast<uint8_t*>(mmap(NULL, (size_t) st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
+    mmap_size = (size_t) st.st_size;
+    prog_mmap = static_cast<uint8_t*>(mmap(NULL, mmap_size, PROT_READ, MAP_PRIVATE, fd, 0));
 
     if ((unsigned char*) prog_mmap == MAP_FAILED) {
         std::cout << "ERROR: Failed to initialize memory map for " << prog_path << "\n";
         close(fd);
         return -1;
     }
+
+void Parser::read_header() {
+
+}
 
     return 0;
 }

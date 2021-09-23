@@ -44,13 +44,16 @@ namespace elf_parser {
     };
 
 
-    class Elf {
+    class Parser {
         public:
             int8_t load_mmap();
             void setup(std::string elf_prog_path);
+            void cleanup();
         private:
+            Elf64_Ehdr elf_header;
             std::string prog_path; 
             uint8_t* prog_mmap;
+            size_t mmap_size;
     };
 
 }
