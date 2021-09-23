@@ -61,9 +61,10 @@ int8_t Parser::load_mmap() {
         return -1;
     }
 
-void Parser::read_header() {
-
-}
 
     return 0;
+}
+
+void Parser::read_header() {
+
 }

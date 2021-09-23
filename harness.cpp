@@ -29,4 +29,5 @@ int main(void) {
     string prog_path = "test";
     parser.setup(prog_path);
     parser.load_mmap();
+    parser.cleanup();
 }

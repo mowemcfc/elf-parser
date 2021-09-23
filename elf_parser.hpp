@@ -47,6 +47,7 @@ namespace elf_parser {
     class Parser {
         public:
             int8_t load_mmap();
+            void read_header();
             void setup(std::string elf_prog_path);
             void cleanup();
         private:
