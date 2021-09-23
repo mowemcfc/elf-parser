@@ -36,15 +36,22 @@ void Parser::cleanup() {
     return;
 }
 
+
+Elf64_Ehdr* Parser::read_elf_header() {
+    elf_header = (Elf64_Ehdr*) prog_mmap;    
+    return elf_header;
+}
+
+
 uint8_t Parser::get_ei_class() {
     if ( elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
-        arch_type = ELFCLASS64;
+        p_ei_class = ELFCLASS64;
         return ELFCLASS64;
     } else if ( elf_header->e_ident[EI_CLASS] == ELFCLASS32 ) {
-        arch_type = ELFCLASS32;
+        p_ei_class = ELFCLASS32;
         return ELFCLASS32;
     } else {
-        arch_type = 0;
+        p_ei_class = 0;
         if (parser_verbose) {
             cout << "e_ident ei_class is of invalid type" << endl;
         }

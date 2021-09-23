@@ -37,6 +37,8 @@
 namespace elf_parser {
 
 
+    class Parser {
+        public:
             Parser() {
                 parser_verbose = 0;
             }
@@ -47,14 +49,16 @@ namespace elf_parser {
             // Class variables
             uint8_t parser_verbose;
 
-    class Parser {
-        public:
+            // Function signatures
             int8_t load_mmap();
+            Elf64_Ehdr* read_elf_header();
             uint8_t get_ei_class();
             void setup(std::string elf_prog_path);
             void cleanup();
+
         private:
             uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
+            Elf64_Ehdr* elf_header;
             std::string prog_path; 
             uint8_t* prog_mmap;
             size_t mmap_size;
