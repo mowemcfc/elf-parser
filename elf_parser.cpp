@@ -38,10 +38,20 @@ void Parser::cleanup() {
     return;
 }
 
+void Parser::read_eident() {
+
+}
+
 
 Elf64_Ehdr* Parser::read_elf_header() {
     elf_header = (Elf64_Ehdr*) prog_mmap;    
     return elf_header;
+}
+
+
+void Parser::check_ELF64_magic() {
+    
+
 }
 
 
@@ -61,6 +71,8 @@ uint8_t Parser::get_ei_class() {
 
     return 0;
 }
+
+
 int8_t Parser::load_mmap() {
     int fd, i;
     struct stat st;

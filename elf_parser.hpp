@@ -52,6 +52,8 @@ namespace elf_parser {
             // Function signatures
             int8_t load_mmap();
             Elf64_Ehdr* read_elf_header();
+            void read_eident();
+            void check_ELF64_magic();
             uint8_t get_ei_class();
             void setup(std::string elf_prog_path);
             void cleanup();
