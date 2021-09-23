@@ -31,18 +31,21 @@
 #include <elf.h>
 #include <fcntl.h>
 
+#define PARSER_VERBOSE 1
+#define PARSER_NONVERBOSE
+
 namespace elf_parser {
 
 
-    struct e_ident {
-        unsigned char ei_mag[4];
-        unsigned char ei_class;
-        unsigned char ei_data;
-        unsigned char ei_version;
-        unsigned char ei_pad;
-        unsigned char ei_nident;
-    };
+            Parser() {
+                parser_verbose = 0;
+            }
+            Parser(int verbosity) {
+                parser_verbose = verbosity;
+            }
 
+            // Class variables
+            uint8_t parser_verbose;
 
     class Parser {
         public:
