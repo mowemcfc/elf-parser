@@ -36,6 +36,22 @@ void Parser::cleanup() {
     return;
 }
 
+uint8_t Parser::get_ei_class() {
+    if ( elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
+        arch_type = ELFCLASS64;
+        return ELFCLASS64;
+    } else if ( elf_header->e_ident[EI_CLASS] == ELFCLASS32 ) {
+        arch_type = ELFCLASS32;
+        return ELFCLASS32;
+    } else {
+        arch_type = 0;
+        if (parser_verbose) {
+            cout << "e_ident ei_class is of invalid type" << endl;
+        }
+    }
+
+    return 0;
+}
 int8_t Parser::load_mmap() {
     int fd, i;
     struct stat st;

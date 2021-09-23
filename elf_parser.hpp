@@ -50,11 +50,11 @@ namespace elf_parser {
     class Parser {
         public:
             int8_t load_mmap();
-            void read_header();
+            uint8_t get_ei_class();
             void setup(std::string elf_prog_path);
             void cleanup();
         private:
-            Elf64_Ehdr elf_header;
+            uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
             std::string prog_path; 
             uint8_t* prog_mmap;
             size_t mmap_size;
