@@ -26,9 +26,9 @@ using std::string;
 
 int main(void) {
     string prog_path = "test";
-    Parser parser = Parser(prog_path);
+    Parser parser = Parser(prog_path, 1);
     parser.read_elf_header();
     parser.get_ei_class();
-    parser.check_ELF64_magic();
+    parser.print_elf_header();
     parser.cleanup();
 }

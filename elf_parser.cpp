@@ -25,7 +25,7 @@
 #include "elf_parser.hpp"
 using namespace elf_parser;
 using namespace std;
-
+using elf_parser::Parser;
 
 void Parser::setup(std::string prog_path) {
     Parser::p_file_path = prog_path;
@@ -38,10 +38,6 @@ void Parser::cleanup() {
     return;
 }
 
-void Parser::read_eident() {
-
-}
-
 
 Elf64_Ehdr* Parser::read_elf_header() {
     p_elf_header = (Elf64_Ehdr*) p_prog_mmap;    
@@ -49,19 +45,33 @@ Elf64_Ehdr* Parser::read_elf_header() {
 }
 
 
-uint8_t Parser::check_ELF64_magic() {
-    std::string p_elf_magic;
-    p_elf_magic.append((const char*)p_elf_header->e_ident, 4);
 
-    if (p_elf_magic.compare(0, 4, ELFMAG) == 0) {
+bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose) {
+    std::string e_ident(reinterpret_cast<char const*>(p_e_ident), 16);
+
+    if ( e_ident.compare(0, 4, ELFMAG) != 0 ) {
         if(parser_verbose) {
-            cout << "file contains valid ELF header" << endl;
+            cout << "file does not contain a valid ELF header" << endl;
         }
-        return 0;
+        return false;
     }
 
-    return -1;
+    return true;
+}
 
+// TODO: use boost formatting instead of printf for magic hex
+bool Parser::print_elf_header() {
+    if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
+        cout << "file is not a valid ELF (or magic is malformed)" << endl;
+    }
+
+    cout << "ELF Magic: ";
+    for (int i = 0; i < EI_NIDENT; i++) {
+        printf("%02x ", p_elf_header->e_ident[i]);
+    }
+    cout << endl;
+
+    return true;
 }
 
 

@@ -43,7 +43,8 @@ namespace elf_parser {
             int8_t load_mmap(std::string file_path);
             Elf64_Ehdr* read_elf_header();
             void read_eident();
-            uint8_t check_ELF64_magic();
+            static bool check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose);
+            bool print_elf_header();
             uint8_t get_ei_class();
             void setup(std::string elf_prog_path);
             void cleanup();
@@ -61,6 +62,8 @@ namespace elf_parser {
             uint8_t parser_verbose;
 
         private:
+
+            // Private variables
             uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
             Elf64_Ehdr* p_elf_header;
             std::string p_file_path; 
