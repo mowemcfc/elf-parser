@@ -71,11 +71,38 @@ bool Parser::print_elf_header() {
     }
     cout << endl;
 
+    cout << "ELF Type: " << get_e_type() << endl;
+
     return true;
 }
 
 
-uint8_t Parser::get_ei_class() {
+const char* Parser::get_e_type() {
+    switch (p_elf_header->e_type) {
+        case ET_NONE: return  "No file type";
+        case ET_REL: return "Relocatable file";
+        case ET_EXEC: return "Executable file";
+        case ET_DYN: return "Shared object file";
+        case ET_CORE: return "Core file";
+
+        default:
+            static char ret_string[48];
+
+            if ( (p_elf_header->e_type >= ET_LOPROC) && (p_elf_header->e_type <= ET_HIPROC) ) {
+                snprintf(ret_string, 48, "Processor specific: %02x", p_elf_header->e_type);        
+            } else if ( (p_elf_header->e_type >= ET_LOOS) && (p_elf_header->e_type <= ET_HIOS) ) {
+                snprintf(ret_string, 48, "Operating System specific: %02x", p_elf_header->e_type);
+            } else {
+                snprintf(ret_string, 48, "Invalid e_type: %u", p_elf_header->e_type);
+                if(parser_verbose) {
+                    cout << "WARN: ELF has invalid header E_TYPE value" << endl;
+                }
+            }
+            return ret_string;
+    }
+}
+
+
     if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
         p_ei_class = ELFCLASS64;
         return ELFCLASS64;

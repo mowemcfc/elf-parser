@@ -40,15 +40,18 @@ namespace elf_parser {
     class Parser {
         public:
             // Function signatures
-            int8_t load_mmap(std::string file_path);
-            Elf64_Ehdr* read_elf_header();
-            void read_eident();
-            static bool check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose);
-            bool print_elf_header();
-            uint8_t get_ei_class();
             void setup(std::string elf_prog_path);
             void cleanup();
+            int8_t load_mmap(std::string file_path);
+            Elf64_Ehdr* read_elf_header();
+            static bool check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose);
+            bool print_elf_header();
 
+            // Getters
+            const char* get_ei_class();
+            const char* get_e_type();
+
+            // Constructors
             Parser(std::string file_path) {
                 load_mmap(file_path);
                 parser_verbose = 0;
