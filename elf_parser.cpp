@@ -65,12 +65,7 @@ bool Parser::print_elf_header() {
         cout << "file is not a valid ELF (or magic is malformed)" << endl;
     }
 
-    cout << "ELF Magic: ";
-    for (int i = 0; i < EI_NIDENT; i++) {
-        printf("%02x ", p_elf_header->e_ident[i]);
-    }
-    cout << endl;
-
+    cout << "ELF Magic: " << get_e_ident() << endl;
     cout << "ELF Type: " << get_e_type() << endl;
 
     cout << "Machine: " << get_e_machine() << endl;
@@ -78,6 +73,15 @@ bool Parser::print_elf_header() {
     return true;
 }
 
+const char* Parser::get_e_ident() {
+    static char ret_string[64];
+
+    uint8_t cur = 0;
+    for (int i = 0; i < EI_NIDENT; i++)
+        cur = snprintf(ret_string + (cur*i), 64-cur, "%02x ", p_elf_header->e_ident[i]);
+
+    return ret_string;
+}
 
 const char* Parser::get_e_machine() {
     switch (p_elf_header->e_type) {
