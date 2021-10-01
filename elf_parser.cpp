@@ -103,20 +103,20 @@ const char* Parser::get_e_type() {
 }
 
 
+const char* Parser::get_ei_class() {
     if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
         p_ei_class = ELFCLASS64;
-        return ELFCLASS64;
+        return "64 Bit ELF";
     } else if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS32 ) {
         p_ei_class = ELFCLASS32;
-        return ELFCLASS32;
+        return "32 Bit ELF";
     } else {
         p_ei_class = ELFCLASSNONE;
         if (parser_verbose) {
-            cout << "e_ident ei_class is of invalid type" << endl;
+            cout << "WARN: e_ident ei_class is of invalid type" << endl;
         }
+        return "Invalid type";
     }
-
-    return p_ei_class;
 }
 
 
