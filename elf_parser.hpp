@@ -50,6 +50,7 @@ namespace elf_parser {
             // Getters
             const char* get_ei_class();
             const char* get_e_type();
+            const char* get_e_machine();
 
             // Constructors
             Parser(std::string file_path) {
