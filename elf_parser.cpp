@@ -70,9 +70,19 @@ bool Parser::print_elf_header() {
 
     cout << "Machine: " << get_e_machine() << endl;
     cout << "Version: " << get_e_version() << endl;
+    cout << "Entry point: " << get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
 
     return true;
 }
+
+
+const char* Parser::get_e_entry() {
+    static char ret_string[24];
+    snprintf(ret_string, 24, "0x%2.2lx", p_elf_header->e_entry);
+    
+    return ret_string;
+}
+
 
 const char* Parser::get_e_version() {
     if ( p_elf_header->e_version == EV_NONE ) {
