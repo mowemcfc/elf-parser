@@ -106,8 +106,10 @@ const char* Parser::get_e_ident() {
     return ret_string;
 }
 
+
+// TODO: There are a lot of machine types missing here - update w/ more complete list at later date
 const char* Parser::get_e_machine() {
-    switch (p_elf_header->e_type) {
+    switch (p_elf_header->e_machine) {
         case EM_NONE:		return "None";
         case EM_AARCH64:	return "AArch64";
         case EM_M32:		return "WE32100";
