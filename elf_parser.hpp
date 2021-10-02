@@ -51,6 +51,8 @@ namespace elf_parser {
             const char* get_e_ident();
             const char* get_e_type();
             const char* get_e_machine();
+            const char* get_e_version();
+            const char* get_e_entry();
             const char* get_ei_class();
 
             // Constructors
