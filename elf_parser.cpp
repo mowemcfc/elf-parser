@@ -59,10 +59,11 @@ bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose)
     return true;
 }
 
-// TODO: use boost formatting instead of printf for magic hex
+
+// TODO: use boost?? formatting instead of printf for magic hex
 bool Parser::print_elf_header() {
     if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
-        cout << "file is not a valid ELF (or magic is malformed)" << endl;
+        cout << "WARN: file is not a valid ELF (or magic is malformed)" << endl;
     }
 
     cout << "ELF Magic: " << get_e_ident() << endl;
