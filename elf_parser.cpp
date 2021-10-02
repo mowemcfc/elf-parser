@@ -45,7 +45,6 @@ Elf64_Ehdr* Parser::read_elf_header() {
 }
 
 
-
 bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose) {
     std::string e_ident(reinterpret_cast<char const*>(p_e_ident), 16);
 
@@ -63,12 +62,11 @@ bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose)
 // TODO: use boost?? formatting instead of printf for magic hex
 bool Parser::print_elf_header() {
     if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
-        cout << "WARN: file is not a valid ELF (or magic is malformed)" << endl;
+        cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
     }
 
     cout << "ELF Magic: " << get_e_ident() << endl;
     cout << "ELF Type: " << get_e_type() << endl;
-
     cout << "Machine: " << get_e_machine() << endl;
     cout << "Version: " << get_e_version() << endl;
     cout << "Entry point: " << get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
