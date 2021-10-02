@@ -192,7 +192,7 @@ const char* Parser::get_e_machine() {
         case EM_CRX:		return "National Semiconductor CRX microprocessor";
         case EM_IP2K:		return "Ubicom IP2xxx 8-bit microcontrollers";
         case EM_XTENSA:		return "Tensilica Xtensa Processor";
-        case EM_VIDEOCORE	return "Alphamosaic VideoCore processor";
+        case EM_VIDEOCORE:	return "Alphamosaic VideoCore processor";
         case EM_TMM_GPP:	return "Thompson Multimedia General Purpose Processor";
         case EM_NS32K:		return "National Semiconductor 32000 series";
         case EM_TPC:		return "Tenor Network TPC processor";
@@ -202,7 +202,7 @@ const char* Parser::get_e_machine() {
         case EM_F2MC16:		return "Fujitsu F2MC16";
         case EM_MSP430:		return "Texas Instruments msp430 microcontroller";
         case EM_LATTICEMICO32:	return "Lattice Mico32";
-        case EM_M32C:	    return "Renesas M32c";
+        case EM_M32C:       return "Renesas M32c";
         case EM_BLACKFIN:	return "Analog Devices Blackfin";
         case EM_SE_C33:		return "S1C33 Family of Seiko Epson processors";
         case EM_SEP:		return "Sharp embedded microprocessor";
