@@ -56,6 +56,11 @@ namespace elf_parser {
             const char* get_e_phoff();
             const char* get_e_shoff();
             const char* get_e_flags();
+            const char* get_e_phentsize();
+            const char* get_e_phnum();
+            const char* get_total_phsize();
+            const char* get_e_shentsize();
+            const char* get_e_shnum();
             const char* get_ei_class();
 
             // Constructors
