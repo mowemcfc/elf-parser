@@ -72,8 +72,17 @@ bool Parser::print_elf_header() {
     cout << "Entry point: " << get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
     cout << "Offset to program headers: " << get_e_phoff() << endl;
     cout << "Offset to section headers: " << get_e_shoff() << endl;
+    cout << "Processor-specific Flags: " << get_e_flags() << endl;
 
     return true;
+}
+
+
+const char* Parser::get_e_flags() {
+    static char ret_string[16];
+    snprintf(ret_string, 16, "0x%x", p_elf_header->e_flags);
+
+    return ret_string;
 }
 
 
