@@ -70,8 +70,17 @@ bool Parser::print_elf_header() {
     cout << "Machine: " << get_e_machine() << endl;
     cout << "Version: " << get_e_version() << endl;
     cout << "Entry point: " << get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
+    cout << "Offset to program headers: " << get_e_phoff() << endl;
 
     return true;
+}
+
+
+const char* Parser::get_e_phoff() {
+    static char ret_string[16];
+    snprintf(ret_string, 16, "%lu bytes", p_elf_header->e_phoff);
+
+    return ret_string;
 }
 
 
