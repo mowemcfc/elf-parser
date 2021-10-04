@@ -76,12 +76,12 @@ bool Parser::print_elf_header() {
     cout << "Offset to section headers: " << get_e_shoff() << endl;
     cout << "Processor-specific Flags: " << get_e_flags() << endl;
     cout << "Program header Size: " << get_e_phentsize() << endl;
-    cout << "Number of program headers " << get_e_phnum() << endl;
+    cout << "Number of program headers: " << get_e_phnum() << endl;
     if ( parser_verbose ) {
         cout << "Space (total) of program headers: " << get_total_phsize() << endl;
     }
     cout << "Section header size: " << get_e_shentsize() << endl;
-    cout << "Number of section headers " << get_e_shnum() << endl;
+    cout << "Number of section headers: " << get_e_shnum() << endl;
 
     return true;
 }
@@ -121,7 +121,7 @@ const char* Parser::get_e_phnum() {
     static char ret_string[16];
 
     if ( p_elf_header->e_phnum == 0 ) {
-        return "0b (No headers)";
+        return "0 (No headers)";
     } else {
         snprintf(ret_string, 16, "%u", p_elf_header->e_phnum);
     }
