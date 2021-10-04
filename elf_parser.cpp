@@ -20,12 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// TODO: implement verbosity options in constructor
-
+#include <boost/program_options.hpp>
 #include "elf_parser.hpp"
+
 using namespace elf_parser;
 using namespace std;
 using elf_parser::Parser;
+namespace po = boost::program_options;
 
 void Parser::setup(std::string prog_path) {
     Parser::p_file_path = prog_path;
@@ -60,6 +61,7 @@ bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose)
 
 
 // TODO: use boost?? formatting instead of printf for magic hex
+// TODO: use fixed offset prints for alignment
 bool Parser::print_elf_header() {
     if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
         cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
@@ -207,7 +209,7 @@ const char* Parser::get_e_machine() {
         case EM_860:		return "Intel 80860";
         case EM_MIPS:		return "MIPS R3000";
         case EM_S370:		return "IBM System/370";
-        case EM_MIPS_RS3_LE:	return "MIPS R4000 big-endian";
+        case EM_MIPS_RS3_LE:    return "MIPS R4000 big-endian";
         case EM_PARISC:		return "HPPA";
         case EM_SPARC32PLUS:	return "Sparc v8+" ;
         case EM_960:		return "Intel 90860";
@@ -411,6 +413,40 @@ int8_t Parser::load_mmap(std::string file_path) {
         return -1;
     }
 
+
+    return 0;
+}
+
+
+int main(int argc, char* argv[]) {
+    po::options_description desc(
+    "ELF Parser 1.0.0\n"
+    "Written by mowemcfc (jcartermcfc@gmail.com)\n"
+    "Allowed options"
+    );
+
+    desc.add_options()
+        ("help", "produce help message")
+        ("headers", "print program headers");
+
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);    
+
+    if ( vm.count("help") ) {
+        cout << desc << "\n";
+        return 0;
+    }
+
+    if ( vm.count("headers") ) {
+        std::string prog_path = "test";
+        Parser parser = Parser(prog_path, 1);
+        parser.read_elf_header();
+        parser.get_ei_class();
+        parser.print_elf_header();
+        parser.cleanup();
+    }
 
     return 0;
 }
