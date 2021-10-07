@@ -42,8 +42,7 @@ namespace elf_parser {
             // Function signatures
             void setup(std::string elf_prog_path);
             void cleanup();
-            int8_t load_mmap(std::string file_path);
-            Elf64_Ehdr* read_elf_header();
+            std::shared_ptr<void> load_mmap(std::string file_path);
             static bool check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose);
             bool print_elf_header();
 
@@ -61,15 +60,17 @@ namespace elf_parser {
             const char* get_total_phsize();
             const char* get_e_shentsize();
             const char* get_e_shnum();
+            const char* get_total_shsize();
+            const char* get_e_shstrndx();
             const char* get_ei_class();
 
             // Constructors
             Parser(std::string file_path) {
-                load_mmap(file_path);
+                setup(file_path);
                 parser_verbose = 0;
             }
             Parser(std::string file_path, int verbosity) {
-                load_mmap(file_path);
+                setup(file_path);
                 parser_verbose = verbosity;
             }
 
@@ -77,13 +78,14 @@ namespace elf_parser {
             uint8_t parser_verbose;
 
         private:
+            std::shared_ptr<Elf64_Shdr*> read_section_headers(std::shared_ptr<void> p_prog_mmap);
+            std::shared_ptr<Elf64_Ehdr> read_elf_header(std::shared_ptr<void> p_prog_mmap);
 
             // Private variables
             uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
-            Elf64_Ehdr* p_elf_header;
+            std::shared_ptr<Elf64_Ehdr> p_elf_header;
+            std::shared_ptr<Elf64_Shdr*> p_section_headers;
             std::string p_file_path; 
-            uint8_t* p_prog_mmap;
-            size_t p_mmap_size;
     };
 
 }

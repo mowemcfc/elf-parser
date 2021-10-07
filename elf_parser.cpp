@@ -28,21 +28,24 @@ using namespace std;
 using elf_parser::Parser;
 namespace po = boost::program_options;
 
+
 void Parser::setup(std::string prog_path) {
-    Parser::p_file_path = prog_path;
+    std::shared_ptr<void> p_prog_mmap = load_mmap(prog_path);
+    p_section_headers = read_section_headers(p_prog_mmap);
+    p_elf_header = read_elf_header(p_prog_mmap);
     return;
 }
 
 
-void Parser::cleanup() {
-    munmap(p_prog_mmap, p_mmap_size);
-    return;
+std::shared_ptr<Elf64_Shdr*> Parser::read_section_headers(std::shared_ptr<void> p_prog_mmap) {
+    Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap.get();
+    return std::shared_ptr<Elf64_Shdr*>{p_prog_mmap, sectheader};
 }
 
 
-Elf64_Ehdr* Parser::read_elf_header() {
-    p_elf_header = (Elf64_Ehdr*) p_prog_mmap;    
-    return p_elf_header;
+std::shared_ptr<Elf64_Ehdr> Parser::read_elf_header(std::shared_ptr<void> p_prog_mmap) {
+    Elf64_Ehdr* elfheader = (Elf64_Ehdr*) p_prog_mmap.get();
+    return std::shared_ptr<Elf64_Ehdr>(p_prog_mmap, elfheader); 
 }
 
 
@@ -82,9 +85,40 @@ bool Parser::print_elf_header() {
     }
     cout << "Section header size: " << get_e_shentsize() << endl;
     cout << "Number of section headers: " << get_e_shnum() << endl;
+    if ( parser_verbose ) {
+        cout << "Space (total) of section headers: " << get_total_shsize() << endl;
+    }
+    cout << "Section name string table index: " << get_e_shstrndx() << endl;
 
     return true;
 }
+
+// This member holds the section header table index of the entry associated with the section name string table. 
+const char* Parser::get_e_shstrndx() {
+    static char ret_string[32];
+
+    if ( p_elf_header->e_shstrndx == SHN_UNDEF ) {
+        return "Undefined";
+    } else if ( p_elf_header->e_shstrndx == SHN_XINDEX ) {
+        // TODO: get index from section 0 sh_link field
+        if( p_ei_class == ELFCLASS64 ) {
+        }
+        return "hello";
+    } else {
+        snprintf(ret_string, 32, "%d", p_elf_header->e_shstrndx );
+
+        return ret_string;
+    }
+}
+
+
+const char* Parser::get_total_shsize() {
+    // Total occupied space by program headers = e_phentsize * e_shnum
+    static char ret_string[32];
+    snprintf(ret_string, 32, "%d (bytes)", p_elf_header->e_shnum * p_elf_header->e_shentsize);
+
+    return ret_string;
+} 
 
 
 const char* Parser::get_e_shnum() {
@@ -111,7 +145,7 @@ const char* Parser::get_e_shentsize() {
 const char* Parser::get_total_phsize() {
     // Total occupied space by program headers = e_phentsize * e_phnum    
     static char ret_string[32];
-    snprintf(ret_string, 16, "%d (bytes)", p_elf_header->e_phnum * p_elf_header->e_phentsize);
+    snprintf(ret_string, 32, "%d (bytes)", p_elf_header->e_phnum * p_elf_header->e_phentsize);
 
     return ret_string;
 }
@@ -387,34 +421,36 @@ const char* Parser::get_ei_class() {
     }
 }
 
-
-int8_t Parser::load_mmap(std::string file_path) {
+std::shared_ptr<void> Parser::load_mmap(std::string file_path) {
     int fd, i;
     struct stat st;
 
     if ((fd = open(file_path.c_str(), O_RDONLY)) < 0) {
         cout << "ERROR: Could not open file " << file_path << endl;
         close(fd);
-        return -1;
+        return NULL;
     }
 
     if (fstat(fd, &st) < 0) {
         cout << "ERROR: Could not fstat file " << file_path << endl;
         close(fd);
-        return -1;
+        return NULL;
     }
 
-    p_mmap_size = (size_t) st.st_size;
-    p_prog_mmap = static_cast<uint8_t*>(mmap(NULL, p_mmap_size, PROT_READ, MAP_PRIVATE, fd, 0));
+    size_t p_mmap_size = (size_t) st.st_size;
 
-    if ((unsigned char*) p_prog_mmap == MAP_FAILED) {
+    auto mmap_del = [p_mmap_size](void* p) {
+        munmap(p, p_mmap_size);
+    };
+    auto p_prog_mmap = std::shared_ptr<void>(mmap(NULL, p_mmap_size, PROT_READ, MAP_PRIVATE, fd, 0), mmap_del);
+
+    if ((unsigned char*) p_prog_mmap.get() == MAP_FAILED) {
         cout << "ERROR: Failed to initialize memory map for " << file_path << endl;
         close(fd);
-        return -1;
+        return NULL;
     }
-
-
-    return 0;
+    
+    return p_prog_mmap;
 }
 
 
@@ -442,10 +478,8 @@ int main(int argc, char* argv[]) {
     if ( vm.count("headers") ) {
         std::string prog_path = "test";
         Parser parser = Parser(prog_path, 1);
-        parser.read_elf_header();
         parser.get_ei_class();
         parser.print_elf_header();
-        parser.cleanup();
     }
 
     return 0;
