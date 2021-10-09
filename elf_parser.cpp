@@ -30,22 +30,22 @@ namespace po = boost::program_options;
 
 
 void Parser::setup(std::string prog_path) {
-    std::shared_ptr<void> p_prog_mmap = load_mmap(prog_path);
-    p_section_headers = read_section_headers(p_prog_mmap);
-    p_elf_header = read_elf_header(p_prog_mmap);
+    p_prog_mmap = load_mmap(prog_path);
+    p_section_headers = read_section_headers(p_prog_mmap.get());
+    p_elf_header = read_elf_header(p_prog_mmap.get());
     return;
 }
 
 
-std::shared_ptr<Elf64_Shdr*> Parser::read_section_headers(std::shared_ptr<void> p_prog_mmap) {
-    Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap.get();
-    return std::shared_ptr<Elf64_Shdr*>{p_prog_mmap, sectheader};
+Elf64_Shdr** Parser::read_section_headers(void* p_prog_mmap) {
+    Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap;
+    return sectheader;
 }
 
 
-std::shared_ptr<Elf64_Ehdr> Parser::read_elf_header(std::shared_ptr<void> p_prog_mmap) {
-    Elf64_Ehdr* elfheader = (Elf64_Ehdr*) p_prog_mmap.get();
-    return std::shared_ptr<Elf64_Ehdr>(p_prog_mmap, elfheader); 
+Elf64_Ehdr* Parser::read_elf_header(void* p_prog_mmap) {
+    Elf64_Ehdr* elfheader = (Elf64_Ehdr*) p_prog_mmap;
+    return elfheader; 
 }
 
 
@@ -421,7 +421,7 @@ const char* Parser::get_ei_class() {
     }
 }
 
-std::shared_ptr<void> Parser::load_mmap(std::string file_path) {
+std::unique_ptr<void, Parser::p_mmap_deleter> Parser::load_mmap(std::string file_path) {
     int fd, i;
     struct stat st;
 
@@ -437,12 +437,10 @@ std::shared_ptr<void> Parser::load_mmap(std::string file_path) {
         return NULL;
     }
 
-    size_t p_mmap_size = (size_t) st.st_size;
+    p_mmap_size = (size_t) st.st_size;
 
-    auto mmap_del = [p_mmap_size](void* p) {
-        munmap(p, p_mmap_size);
-    };
-    auto p_prog_mmap = std::shared_ptr<void>(mmap(NULL, p_mmap_size, PROT_READ, MAP_PRIVATE, fd, 0), mmap_del);
+    std::unique_ptr<void, p_mmap_deleter> p_prog_mmap;
+    p_prog_mmap = std::unique_ptr<void, p_mmap_deleter>(mmap((void*) nullptr, p_mmap_size, PROT_READ, MAP_PRIVATE, fd, 0), p_mmap_deleter());
 
     if ((unsigned char*) p_prog_mmap.get() == MAP_FAILED) {
         cout << "ERROR: Failed to initialize memory map for " << file_path << endl;
@@ -478,7 +476,6 @@ int main(int argc, char* argv[]) {
     if ( vm.count("headers") ) {
         std::string prog_path = "test";
         Parser parser = Parser(prog_path, 1);
-        parser.get_ei_class();
         parser.print_elf_header();
     }
 
