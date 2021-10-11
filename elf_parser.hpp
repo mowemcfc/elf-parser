@@ -77,13 +77,6 @@ namespace elf_parser {
             uint8_t parser_verbose;
             size_t p_mmap_size;
 
-            struct p_mmap {
-                void* mem = nullptr;
-                size_t size = 0;
-                p_mmap(void * start, size_t size, int prot, int flags, int fd) {
-                    mem = mmap(start, size, prot, flags, fd, 0);
-                }
-            };
             struct p_mmap_deleter {
                 void operator()(void* p) const {
                     if (p != nullptr && p != MAP_FAILED && munmap(p, 1040) == -1) {
