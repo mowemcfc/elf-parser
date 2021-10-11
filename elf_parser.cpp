@@ -405,19 +405,19 @@ const char* Parser::get_e_type() {
 }
 
 
-const char* Parser::get_ei_class() {
+const uint8_t Parser::get_ei_class() {
     if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
         p_ei_class = ELFCLASS64;
-        return "64 Bit ELF";
+        return ELFCLASS64;
     } else if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS32 ) {
         p_ei_class = ELFCLASS32;
-        return "32 Bit ELF";
+        return ELFCLASS32;
     } else {
         p_ei_class = ELFCLASSNONE;
         if (parser_verbose) {
             cout << "WARN: e_ident ei_class is of invalid type" << endl;
         }
-        return "Invalid type";
+        return ELFCLASSNONE;
     }
 }
 
@@ -468,14 +468,20 @@ int main(int argc, char* argv[]) {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);    
 
+    std::string prog_path = "test";
+    Parser parser = Parser(prog_path, 1);
+
+    if ( parser.get_ei_class() != ELFCLASS64 ) {
+        cout << "ERROR: Only 64 bit ELF executables are supported, exiting" << endl;
+        exit(1);
+    }
+
     if ( vm.count("help") ) {
         cout << desc << "\n";
         return 0;
     }
 
     if ( vm.count("headers") ) {
-        std::string prog_path = "test";
-        Parser parser = Parser(prog_path, 1);
         parser.print_elf_header();
     }
 

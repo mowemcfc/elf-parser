@@ -61,7 +61,7 @@ namespace elf_parser {
             const char* get_e_shnum();
             const char* get_total_shsize();
             const char* get_e_shstrndx();
-            const char* get_ei_class();
+            const uint8_t get_ei_class();
 
             // Constructors
             Parser(std::string file_path) {
