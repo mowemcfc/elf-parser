@@ -101,9 +101,8 @@ const char* Parser::get_e_shstrndx() {
         return "Undefined";
     } else if ( p_elf_header->e_shstrndx == SHN_XINDEX ) {
         // TODO: get index from section 0 sh_link field
-        if( p_ei_class == ELFCLASS64 ) {
-        }
-        return "hello";
+        snprintf(ret_string, 32, "%d", p_section_headers[0]->sh_link);
+        return ret_string;
     } else {
         snprintf(ret_string, 32, "%d", p_elf_header->e_shstrndx );
 
