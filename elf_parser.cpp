@@ -37,7 +37,7 @@ void* Elf_Mmap::get_mmap() {
 
 
 void Parser::setup(std::string prog_path) {
-    p_prog_mmap = new Elf_Mmap(prog_path);
+    p_prog_mmap = make_unique<Elf_Mmap>(prog_path);
     p_prog_mmap->set_section_headers(p_prog_mmap->get_mmap());
     p_prog_mmap->set_elf_header(p_prog_mmap->get_mmap());
     return;

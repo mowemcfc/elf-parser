@@ -101,7 +101,9 @@ namespace elf_parser {
 
 
     Elf_Mmap::~Elf_Mmap(void) {
-        if (prog_mmap != nullptr && prog_mmap != MAP_FAILED && munmap(prog_mmap, mmap_size) == -1) {
+        if (prog_mmap != nullptr && 
+            prog_mmap != MAP_FAILED && 
+            munmap(prog_mmap, mmap_size) == -1) {
             std::cerr << "ERROR: Unable to free mapped memory for program" << std::endl;
         }       
     }
@@ -150,7 +152,7 @@ namespace elf_parser {
 
             // Class variables
             uint8_t parser_verbose;
-            Elf_Mmap* p_prog_mmap;
+            std::unique_ptr<Elf_Mmap> p_prog_mmap;
 
 
         private:
