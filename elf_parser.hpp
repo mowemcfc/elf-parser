@@ -45,11 +45,11 @@ namespace elf_parser {
             void* get_mmap();
             size_t get_size();
             Elf64_Ehdr* get_elf_header();
-            Elf64_Shdr** get_section_headers();
+            Elf64_Shdr* get_section_headers();
 
             // Setters
-            Elf64_Ehdr* set_elf_header(void* p_prog_mmap);
-            Elf64_Shdr** set_section_headers(void* p_prog_mmap);
+            void set_elf_header(void* p_prog_mmap);
+            void set_section_headers(void* p_prog_mmap);
 
             // Constructors & Destructors
             Elf_Mmap(void);
@@ -61,7 +61,7 @@ namespace elf_parser {
             // Class variables
             void* prog_mmap;
             Elf64_Ehdr* p_elf_header;
-            Elf64_Shdr** p_section_headers;
+            Elf64_Shdr* p_section_headers;
             size_t mmap_size;
     };
 

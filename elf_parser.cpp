@@ -38,33 +38,31 @@ void* Elf_Mmap::get_mmap() {
 
 void Parser::setup(std::string prog_path) {
     p_prog_mmap = make_unique<Elf_Mmap>(prog_path);
-    p_prog_mmap->set_section_headers(p_prog_mmap->get_mmap());
     p_prog_mmap->set_elf_header(p_prog_mmap->get_mmap());
+    p_prog_mmap->set_section_headers(p_prog_mmap->get_mmap());
     return;
 }
 
 
-Elf64_Shdr** Elf_Mmap::get_section_headers(void) {
-    Elf64_Shdr** sectheader = (Elf64_Shdr**) prog_mmap;
+Elf64_Shdr* Elf_Mmap::get_section_headers(void) {
+    Elf64_Shdr* sectheader = (Elf64_Shdr*) ((char*) prog_mmap + p_elf_header->e_shoff);
     return sectheader;
 }
 
 
 Elf64_Ehdr* Elf_Mmap::get_elf_header(void) {
     Elf64_Ehdr* elfheader = (Elf64_Ehdr*) prog_mmap;
-    return elfheader; 
+    return elfheader;
 }
 
 
-Elf64_Shdr** Elf_Mmap::set_section_headers(void* p_prog_mmap) {
-    Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap;
-    return sectheader;
+void Elf_Mmap::set_section_headers(void* p_prog_mmap) {
+    p_section_headers = (Elf64_Shdr*) ((char*) p_prog_mmap + p_elf_header->e_shoff);
 }
 
 
-Elf64_Ehdr* Elf_Mmap::set_elf_header(void* p_prog_mmap) {
-    Elf64_Ehdr* elfheader = (Elf64_Ehdr*) p_prog_mmap;
-    return elfheader; 
+void Elf_Mmap::set_elf_header(void* p_prog_mmap) {
+    p_elf_header = (Elf64_Ehdr*) p_prog_mmap;
 }
 
 
@@ -127,9 +125,9 @@ bool Parser::print_section_headers() {
 
 
 const char* Parser::get_sh_name(int sh_idx) {
-    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[32];
-    snprintf(ret_string, 32, "%d", p_section_headers[sh_idx]->sh_name);
+    snprintf(ret_string, 32, "%d", p_section_headers[sh_idx].sh_name);
 
     return ret_string;
 }
@@ -138,14 +136,14 @@ const char* Parser::get_sh_name(int sh_idx) {
 // This member holds the section header table index of the entry associated with the section name string table. 
 const char* Parser::get_e_shstrndx() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
-    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[32];
 
     if ( p_elf_header->e_shstrndx == SHN_UNDEF ) {
         return "Undefined";
     } else if ( p_elf_header->e_shstrndx == SHN_XINDEX ) {
         // TODO: get index from section 0 sh_link field
-        snprintf(ret_string, 32, "%d", p_section_headers[0]->sh_link);
+        snprintf(ret_string, 32, "%d", p_section_headers[0].sh_link);
         return ret_string;
     } else {
         snprintf(ret_string, 32, "%d", p_elf_header->e_shstrndx );
@@ -167,13 +165,13 @@ const char* Parser::get_total_shsize() {
 
 const char* Parser::get_e_shnum() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
-    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[16];
 
     if ( p_elf_header->e_shnum == 0 ) {
         return "0 (No headers)";
     } else if ( p_elf_header-> e_shnum == SHN_UNDEF ) {
-        snprintf(ret_string, 16, "%lu", p_section_headers[0]->sh_size);
+        snprintf(ret_string, 16, "%lu", p_section_headers[0].sh_size);
     } else {
         snprintf(ret_string, 16, "%u", p_elf_header->e_shnum);
     }
