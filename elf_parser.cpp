@@ -119,8 +119,18 @@ bool Parser::print_section_headers() {
     for ( int i = 0; i < p_elf_header->e_shnum; i++ ) {
         cout << format("Section Header %d") % i << endl;
         cout << format("    Name: %d") % get_sh_name(i) << endl; 
+        cout << format("    Section Entry Size: %d") % get_sh_entsize(i) << endl;
     }
     return true;
+}
+
+
+const char* Parser::get_sh_entsize(int sh_idx) {
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "%ld", p_section_headers[sh_idx].sh_entsize);
+
+    return ret_string;
 }
 
 
