@@ -21,29 +21,47 @@
 // SOFTWARE.
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
 #include "elf_parser.hpp"
 
 using namespace elf_parser;
 using namespace std;
 using elf_parser::Parser;
+using boost::format;
 namespace po = boost::program_options;
 
 
+void* Elf_Mmap::get_mmap() {
+    return prog_mmap;
+}
+
+
 void Parser::setup(std::string prog_path) {
-    p_prog_mmap = load_mmap(prog_path);
-    p_section_headers = read_section_headers(p_prog_mmap.get());
-    p_elf_header = read_elf_header(p_prog_mmap.get());
+    p_prog_mmap = new Elf_Mmap(prog_path);
+    p_prog_mmap->set_section_headers(p_prog_mmap->get_mmap());
+    p_prog_mmap->set_elf_header(p_prog_mmap->get_mmap());
     return;
 }
 
 
-Elf64_Shdr** Parser::read_section_headers(void* p_prog_mmap) {
+Elf64_Shdr** Elf_Mmap::get_section_headers(void) {
+    Elf64_Shdr** sectheader = (Elf64_Shdr**) prog_mmap;
+    return sectheader;
+}
+
+
+Elf64_Ehdr* Elf_Mmap::get_elf_header(void) {
+    Elf64_Ehdr* elfheader = (Elf64_Ehdr*) prog_mmap;
+    return elfheader; 
+}
+
+Elf64_Shdr** Elf_Mmap::set_section_headers(void* p_prog_mmap) {
     Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap;
     return sectheader;
 }
 
 
-Elf64_Ehdr* Parser::read_elf_header(void* p_prog_mmap) {
+Elf64_Ehdr* Elf_Mmap::set_elf_header(void* p_prog_mmap) {
     Elf64_Ehdr* elfheader = (Elf64_Ehdr*) p_prog_mmap;
     return elfheader; 
 }
@@ -66,6 +84,8 @@ bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose)
 // TODO: use boost?? formatting instead of printf for magic hex
 // TODO: use fixed offset prints for alignment
 bool Parser::print_elf_header() {
+
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
         cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
     }
@@ -89,12 +109,35 @@ bool Parser::print_elf_header() {
         cout << "Space (total) of section headers: " << get_total_shsize() << endl;
     }
     cout << "Section name string table index: " << get_e_shstrndx() << endl;
+    cout << "\n\n";
 
     return true;
 }
 
+
+bool Parser::print_section_headers() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
+    for ( int i = 0; i < p_elf_header->e_shnum; i++ ) {
+        cout << format("Section Header %d") % i << endl;
+        cout << format("    Name: %d") % get_sh_name(i) << endl; 
+    }
+    return true;
+}
+
+
+const char* Parser::get_sh_name(int sh_idx) {
+    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "%d", p_section_headers[sh_idx]->sh_name);
+
+    return ret_string;
+}
+
+
 // This member holds the section header table index of the entry associated with the section name string table. 
 const char* Parser::get_e_shstrndx() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
+    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[32];
 
     if ( p_elf_header->e_shstrndx == SHN_UNDEF ) {
@@ -112,6 +155,7 @@ const char* Parser::get_e_shstrndx() {
 
 
 const char* Parser::get_total_shsize() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     // Total occupied space by program headers = e_phentsize * e_shnum
     static char ret_string[32];
     snprintf(ret_string, 32, "%d (bytes)", p_elf_header->e_shnum * p_elf_header->e_shentsize);
@@ -121,10 +165,14 @@ const char* Parser::get_total_shsize() {
 
 
 const char* Parser::get_e_shnum() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
+    Elf64_Shdr** p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[16];
 
     if ( p_elf_header->e_shnum == 0 ) {
         return "0 (No headers)";
+    } else if ( p_elf_header-> e_shnum == SHN_UNDEF ) {
+        snprintf(ret_string, 16, "%lu", p_section_headers[0]->sh_size);
     } else {
         snprintf(ret_string, 16, "%u", p_elf_header->e_shnum);
     }
@@ -134,6 +182,7 @@ const char* Parser::get_e_shnum() {
 
 
 const char* Parser::get_e_shentsize() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[16];
     snprintf(ret_string, 16, "%u (bytes)", p_elf_header->e_shentsize);
 
@@ -142,6 +191,7 @@ const char* Parser::get_e_shentsize() {
 
 
 const char* Parser::get_total_phsize() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     // Total occupied space by program headers = e_phentsize * e_phnum    
     static char ret_string[32];
     snprintf(ret_string, 32, "%d (bytes)", p_elf_header->e_phnum * p_elf_header->e_phentsize);
@@ -151,6 +201,7 @@ const char* Parser::get_total_phsize() {
 
 
 const char* Parser::get_e_phnum() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[16];
 
     if ( p_elf_header->e_phnum == 0 ) {
@@ -163,6 +214,7 @@ const char* Parser::get_e_phnum() {
 }
 
 const char* Parser::get_e_phentsize() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[32];
     snprintf(ret_string, 36, "%u (bytes per header)", p_elf_header->e_phentsize);
 
@@ -173,6 +225,7 @@ const char* Parser::get_e_phentsize() {
 
 
 const char* Parser::get_e_flags() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[16];
     snprintf(ret_string, 16, "0x%x", p_elf_header->e_flags);
 
@@ -181,6 +234,7 @@ const char* Parser::get_e_flags() {
 
 
 const char* Parser::get_e_shoff() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[16];
     snprintf(ret_string, 16, "%lu bytes", p_elf_header->e_shoff);
 
@@ -189,6 +243,7 @@ const char* Parser::get_e_shoff() {
 
 
 const char* Parser::get_e_phoff() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[16];
     snprintf(ret_string, 16, "%lu bytes", p_elf_header->e_phoff);
 
@@ -197,6 +252,7 @@ const char* Parser::get_e_phoff() {
 
 
 const char* Parser::get_e_entry() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[24];
     snprintf(ret_string, 24, "0x%2.2lx", p_elf_header->e_entry);
     
@@ -205,6 +261,7 @@ const char* Parser::get_e_entry() {
 
 
 const char* Parser::get_e_version() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     if ( p_elf_header->e_version == EV_NONE ) {
         return "Invalid version";
     }
@@ -217,6 +274,7 @@ const char* Parser::get_e_version() {
 
 
 const char* Parser::get_e_ident() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[64];
 
     uint8_t cur = 0;
@@ -229,6 +287,7 @@ const char* Parser::get_e_ident() {
 
 // TODO: There are a lot of machine types missing here - update w/ more complete list at later date
 const char* Parser::get_e_machine() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     switch (p_elf_header->e_machine) {
         case EM_NONE:		return "None";
         case EM_AARCH64:	return "AArch64";
@@ -379,6 +438,7 @@ const char* Parser::get_e_machine() {
 
 
 const char* Parser::get_e_type() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     switch (p_elf_header->e_type) {
         case ET_NONE: return  "No file type";
         case ET_REL: return "Relocatable file";
@@ -405,6 +465,7 @@ const char* Parser::get_e_type() {
 
 
 const uint8_t Parser::get_ei_class() {
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     if ( p_elf_header->e_ident[EI_CLASS] == ELFCLASS64 ) {
         p_ei_class = ELFCLASS64;
         return ELFCLASS64;
@@ -420,36 +481,6 @@ const uint8_t Parser::get_ei_class() {
     }
 }
 
-std::unique_ptr<void, Parser::p_mmap_deleter> Parser::load_mmap(std::string file_path) {
-    int fd, i;
-    struct stat st;
-
-    if ((fd = open(file_path.c_str(), O_RDONLY)) < 0) {
-        cout << "ERROR: Could not open file " << file_path << endl;
-        close(fd);
-        return NULL;
-    }
-
-    if (fstat(fd, &st) < 0) {
-        cout << "ERROR: Could not fstat file " << file_path << endl;
-        close(fd);
-        return NULL;
-    }
-
-    p_mmap_size = (size_t) st.st_size;
-
-    std::unique_ptr<void, p_mmap_deleter> p_prog_mmap;
-    p_prog_mmap = std::unique_ptr<void, p_mmap_deleter>(mmap((void*) nullptr, p_mmap_size, PROT_READ, MAP_PRIVATE, fd, 0), p_mmap_deleter());
-
-    if ((unsigned char*) p_prog_mmap.get() == MAP_FAILED) {
-        cout << "ERROR: Failed to initialize memory map for " << file_path << endl;
-        close(fd);
-        return NULL;
-    }
-    
-    return p_prog_mmap;
-}
-
 
 int main(int argc, char* argv[]) {
     po::options_description desc(
@@ -460,7 +491,8 @@ int main(int argc, char* argv[]) {
 
     desc.add_options()
         ("help", "produce help message")
-        ("headers", "print program headers");
+        ("headers", "print program headers")
+        ("sections", "prints section headers");
 
 
     po::variables_map vm;
@@ -472,7 +504,7 @@ int main(int argc, char* argv[]) {
 
     if ( parser.get_ei_class() != ELFCLASS64 ) {
         cout << "ERROR: Only 64 bit ELF executables are supported, exiting" << endl;
-        exit(1);
+        return 1;
     }
 
     if ( vm.count("help") ) {
@@ -482,6 +514,10 @@ int main(int argc, char* argv[]) {
 
     if ( vm.count("headers") ) {
         parser.print_elf_header();
+    }
+
+    if ( vm.count("sections") ) {
+        parser.print_section_headers();
     }
 
     return 0;

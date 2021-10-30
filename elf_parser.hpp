@@ -31,19 +31,92 @@
 #include <elf.h>
 #include <fcntl.h>
 
+using namespace std;
+
 #define PARSER_VERBOSE 1
 #define PARSER_NONVERBOSE 0
 
 namespace elf_parser {
 
 
+    class Elf_Mmap {
+        public:
+            // Getters
+            void* get_mmap();
+            size_t get_size();
+            Elf64_Ehdr* get_elf_header();
+            Elf64_Shdr** get_section_headers();
+
+            // Setters
+            Elf64_Ehdr* set_elf_header(void* p_prog_mmap);
+            Elf64_Shdr** set_section_headers(void* p_prog_mmap);
+
+            // Constructors & Destructors
+            Elf_Mmap(void);
+            Elf_Mmap(std::string file_path);
+            ~Elf_Mmap(void);
+
+
+        private:
+            // Class variables
+            void* prog_mmap;
+            Elf64_Ehdr* p_elf_header;
+            Elf64_Shdr** p_section_headers;
+            size_t mmap_size;
+    };
+
+
+    Elf_Mmap::Elf_Mmap(void) {
+        prog_mmap = nullptr;
+        mmap_size = 0;
+    }
+
+
+    Elf_Mmap::Elf_Mmap(std::string file_path) {
+        int fd, i;
+        struct stat st;
+
+        if ( (fd = open(file_path.c_str(), O_RDONLY)) < 0 ) {
+            cout << "ERROR: Could not open file " << file_path << endl;
+            close(fd);
+            exit(1);
+        }
+
+        if ( fstat(fd, &st) < 0 ) {
+            cout << "ERROR: Could not fstat file " << file_path << endl;
+            close(fd);
+            exit(1);
+        }
+
+        mmap_size = (size_t) st.st_size;
+
+        prog_mmap = mmap((void*) nullptr, mmap_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+        if ( (unsigned char*) prog_mmap == MAP_FAILED ) {
+            cout << "ERROR: Failed to initialize memory map for " << file_path << endl;
+            close(fd);
+            exit(1);
+        }
+    }
+
+
+    Elf_Mmap::~Elf_Mmap(void) {
+        if (prog_mmap != nullptr && prog_mmap != MAP_FAILED && munmap(prog_mmap, mmap_size) == -1) {
+            std::cerr << "ERROR: Unable to free mapped memory for program" << std::endl;
+        }       
+    }
+
+
     class Parser {
+
+
         public:
             // Function signatures
             void setup(std::string elf_prog_path);
             void cleanup();
             static bool check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose);
             bool print_elf_header();
+            bool print_section_headers();
 
             // Getters
             const char* get_e_ident();
@@ -63,6 +136,8 @@ namespace elf_parser {
             const char* get_e_shstrndx();
             const uint8_t get_ei_class();
 
+            const char* get_sh_name(int sh_idx);
+
             // Constructors
             Parser(std::string file_path) {
                 setup(file_path);
@@ -75,30 +150,14 @@ namespace elf_parser {
 
             // Class variables
             uint8_t parser_verbose;
-            size_t p_mmap_size;
+            Elf_Mmap* p_prog_mmap;
 
-            struct p_mmap_deleter {
-                void operator()(void* p) const {
-                    if (p != nullptr && p != MAP_FAILED && munmap(p, 1040) == -1) {
-                        std::cerr << "ERROR: Unable to free mapped memory for program" << std::endl;
-                    }       
-                }
-            };
 
         private:
-
-            std::unique_ptr<void, p_mmap_deleter> load_mmap(std::string file_path);
-            Elf64_Ehdr* read_elf_header(void* p_prog_mmap);
-            Elf64_Shdr** read_section_headers(void* p_prog_mmap);
-
             // Private variables
             uint8_t p_ei_class; // ELFCLASS64: 2 - ELFCLASS32: 1
             std::string p_file_path; 
-            std::unique_ptr<void, p_mmap_deleter> p_prog_mmap;
-            Elf64_Ehdr* p_elf_header;
-            Elf64_Shdr** p_section_headers;
     };
-
 }
 
 #endif
