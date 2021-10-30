@@ -55,6 +55,7 @@ Elf64_Ehdr* Elf_Mmap::get_elf_header(void) {
     return elfheader; 
 }
 
+
 Elf64_Shdr** Elf_Mmap::set_section_headers(void* p_prog_mmap) {
     Elf64_Shdr** sectheader = (Elf64_Shdr**) p_prog_mmap;
     return sectheader;
@@ -213,6 +214,7 @@ const char* Parser::get_e_phnum() {
     return ret_string;
 }
 
+
 const char* Parser::get_e_phentsize() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[32];
@@ -220,8 +222,6 @@ const char* Parser::get_e_phentsize() {
 
     return ret_string;
 }
-
-
 
 
 const char* Parser::get_e_flags() {
