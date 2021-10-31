@@ -89,26 +89,26 @@ bool Parser::print_elf_header() {
         cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
     }
 
-    cout << "ELF Magic: " << get_e_ident() << endl;
-    cout << "ELF Type: " << get_e_type() << endl;
-    cout << "Machine: " << get_e_machine() << endl;
-    cout << "Version: " << get_e_version() << endl;
-    cout << "Entry point: " << get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
-    cout << "Offset to program headers: " << get_e_phoff() << endl;
-    cout << "Offset to section headers: " << get_e_shoff() << endl;
-    cout << "Processor-specific Flags: " << get_e_flags() << endl;
-    cout << "Program header Size: " << get_e_phentsize() << endl;
-    cout << "Number of program headers: " << get_e_phnum() << endl;
+    cout << format("ELF Magic: %s") % get_e_ident() << endl;
+    cout << format("ELF Type: %s") % get_e_type() << endl;
+    cout << format("Machine: %s") % get_e_machine() << endl;
+    cout << format("Version: %s") % get_e_version() << endl;
+    cout << format("Entry point: %s") % get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
+    cout << format("Offset to program headers: %s") % get_e_phoff() << endl;
+    cout << format("Offset to section headers: %s") % get_e_shoff() << endl;
+    cout << format("Processor-specific Flags: %s") % get_e_flags() << endl;
+    cout << format("Program header Size: %s") % get_e_phentsize() << endl;
+    cout << format("Number of program headers: %s") % get_e_phnum() << endl;
     if ( parser_verbose ) {
-        cout << "Space (total) of program headers: " << get_total_phsize() << endl;
+        cout << format("Space (total) of program headers: %s") % get_total_phsize() << endl;
     }
-    cout << "Section header size: " << get_e_shentsize() << endl;
-    cout << "Number of section headers: " << get_e_shnum() << endl;
+    cout << format("Section header size: %s") % get_e_shentsize() << endl;
+    cout << format("Number of section headers: %s") % get_e_shnum() << endl;
     if ( parser_verbose ) {
-        cout << "Space (total) of section headers: " << get_total_shsize() << endl;
+        cout << format("Space (total) of section headers: %s") % get_total_shsize() << endl;
     }
-    cout << "Section name string table index: " << get_e_shstrndx() << endl;
-    cout << "\n\n";
+    cout << format("Section name string table index: %s") % get_e_shstrndx() << endl;
+    cout << "\n";
 
     return true;
 }
@@ -117,9 +117,9 @@ bool Parser::print_elf_header() {
 bool Parser::print_section_headers() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     for ( int i = 0; i < p_elf_header->e_shnum; i++ ) {
-        cout << format("Section Header %d") % i << endl;
-        cout << format("    Name: %d") % get_sh_name(i) << endl; 
-        cout << format("    Section Entry Size: %d") % get_sh_entsize(i) << endl;
+        cout << format("Section Header %s") % i << endl;
+        cout << format("    Name: %s") % get_sh_name(i) << endl; 
+        cout << format("    Section Entry Size: %s") % get_sh_entsize(i) << endl;
     }
     return true;
 }
