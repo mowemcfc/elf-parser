@@ -117,11 +117,28 @@ bool Parser::print_elf_header() {
 bool Parser::print_section_headers() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     for ( int i = 0; i < p_elf_header->e_shnum; i++ ) {
-        cout << format("Section Header %s") % i << endl;
-        cout << format("    Name: %s") % get_sh_name(i) << endl; 
+        cout << format("\nSection Header %s") % i << endl;
+        cout << format("    Name:               %s") % get_sh_name(i) << endl; 
+        cout << format("    Type:               %s") % get_sh_type(i) << endl;
+        cout << format("    First Byte Address: %s") % get_sh_addr(i) << endl;
         cout << format("    Section Entry Size: %s") % get_sh_entsize(i) << endl;
     }
     return true;
+}
+
+
+const char* Parser::get_sh_addr(int sh_idx) {
+
+    return "XD";
+}
+
+
+const char* Parser::get_sh_type(int sh_idx) {
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "%d", p_section_headers[sh_idx].sh_type);
+
+    return ret_string;
 }
 
 
@@ -136,8 +153,11 @@ const char* Parser::get_sh_entsize(int sh_idx) {
 
 const char* Parser::get_sh_name(int sh_idx) {
     Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
+    Elf64_Shdr* strtab = &p_section_headers[p_elf_header->e_shstrndx];
     static char ret_string[32];
-    snprintf(ret_string, 32, "%d", p_section_headers[sh_idx].sh_name);
+
+    snprintf(ret_string, 32, "%s", (char*) p_prog_mmap->get_mmap() + strtab->sh_offset + p_section_headers[sh_idx].sh_name);
 
     return ret_string;
 }
@@ -154,6 +174,7 @@ const char* Parser::get_e_shstrndx() {
     } else if ( p_elf_header->e_shstrndx == SHN_XINDEX ) {
         // TODO: get index from section 0 sh_link field
         snprintf(ret_string, 32, "%d", p_section_headers[0].sh_link);
+
         return ret_string;
     } else {
         snprintf(ret_string, 32, "%d", p_elf_header->e_shstrndx );

@@ -138,7 +138,15 @@ namespace elf_parser {
             const char* get_e_shstrndx();
             const uint8_t get_ei_class();
 
-            const char* get_sh_name(int sh_idx);
+            const char* get_sh_name(int sh_idx);//unimpl
+            const char* get_sh_type(int sh_idx);
+            const char* get_sh_flags(int sh_idx);//unimpl
+            const char* get_sh_addr(int sh_idx);//unimpl
+            const char* get_sh_offset(int sh_idx);//unimpl
+            const char* get_sh_size(int sh_idx);//unimpl
+            const char* get_sh_link(int sh_idx); //unimpl
+            const char* get_sh_info(int sh_idx); //unimpl
+            const char* get_sh_addralign(int sh_idx); //unimpl
             const char* get_sh_entsize(int sh_idx);
 
             // Constructors
