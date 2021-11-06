@@ -80,34 +80,30 @@ bool Parser::check_ELF64_magic(unsigned char p_e_ident[16], bool parser_verbose)
 }
 
 
-// TODO: use boost?? formatting instead of printf for magic hex
-// TODO: use fixed offset prints for alignment
 bool Parser::print_elf_header() {
 
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
-    if ( !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
-        cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
-    }
 
-    cout << format("ELF Magic: %s") % get_e_ident() << endl;
-    cout << format("ELF Type: %s") % get_e_type() << endl;
-    cout << format("Machine: %s") % get_e_machine() << endl;
-    cout << format("Version: %s") % get_e_version() << endl;
-    cout << format("Entry point: %s") % get_e_entry() << endl; //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
-    cout << format("Offset to program headers: %s") % get_e_phoff() << endl;
-    cout << format("Offset to section headers: %s") % get_e_shoff() << endl;
-    cout << format("Processor-specific Flags: %s") % get_e_flags() << endl;
-    cout << format("Program header Size: %s") % get_e_phentsize() << endl;
-    cout << format("Number of program headers: %s") % get_e_phnum() << endl;
+    cout << format("ELF Magic:                          %s") % get_e_ident() << endl;
+    cout << format("ELF Type:                           %s") % get_e_type() << endl;
+    cout << format("Machine:                            %s") % get_e_machine() << endl;
+    cout << format("Version:                            %s") % get_e_version() << endl;
+    //TODO: check for PIE binary and notify of offset/fixed address. c.f DT_FLAGS_1 and e_type==ET_DYN
+    cout << format("Entry point:                        %s") % get_e_entry() << endl; 
+    cout << format("Offset to program headers:          %s") % get_e_phoff() << endl;
+    cout << format("Offset to section headers:          %s") % get_e_shoff() << endl;
+    cout << format("Processor-specific Flags:           %s") % get_e_flags() << endl;
+    cout << format("Program header Size:                %s") % get_e_phentsize() << endl;
+    cout << format("Number of program headers:          %s") % get_e_phnum() << endl;
     if ( parser_verbose ) {
-        cout << format("Space (total) of program headers: %s") % get_total_phsize() << endl;
+        cout << format("Space (total) of program headers:   %s") % get_total_phsize() << endl;
     }
-    cout << format("Section header size: %s") % get_e_shentsize() << endl;
-    cout << format("Number of section headers: %s") % get_e_shnum() << endl;
+    cout << format("Section header size:                %s") % get_e_shentsize() << endl;
+    cout << format("Number of section headers:          %s") % get_e_shnum() << endl;
     if ( parser_verbose ) {
-        cout << format("Space (total) of section headers: %s") % get_total_shsize() << endl;
+        cout << format("Space (total) of section headers:   %s") % get_total_shsize() << endl;
     }
-    cout << format("Section name string table index: %s") % get_e_shstrndx() << endl;
+    cout << format("Section name string table index:    %s") % get_e_shstrndx() << endl;
     cout << "\n";
 
     return true;
@@ -120,23 +116,77 @@ bool Parser::print_section_headers() {
         cout << format("\nSection Header %s") % i << endl;
         cout << format("    Name:               %s") % get_sh_name(i) << endl; 
         cout << format("    Type:               %s") % get_sh_type(i) << endl;
+        //cout << format("    Flags:              %s") % get_sh_flags(i) << endl;
         cout << format("    First Byte Address: %s") % get_sh_addr(i) << endl;
-        cout << format("    Section Entry Size: %s") % get_sh_entsize(i) << endl;
+        cout << format("    Section Entry Size: %s bytes") % get_sh_entsize(i) << endl;
+        cout << format("    Section Offset:     %s") % get_sh_offset(i) << endl;
+        cout << format("    Size:               %s bytes") % get_sh_size(i) << endl;
     }
     return true;
 }
 
 
-const char* Parser::get_sh_addr(int sh_idx) {
+const char* Parser::get_sh_size(int sh_idx) {
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "%ld", p_section_headers[sh_idx].sh_size);
 
-    return "XD";
+    return ret_string;
 }
 
+
+const char* Parser::get_sh_offset(int sh_idx) {
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "0x%lx", p_section_headers[sh_idx].sh_offset);
+
+    return ret_string;
+}
+
+
+const char* Parser::get_sh_addr(int sh_idx) {
+    Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
+    static char ret_string[32];
+    snprintf(ret_string, 32, "0x%lx", p_section_headers[sh_idx].sh_addr);
+
+    return ret_string;
+}
 
 const char* Parser::get_sh_type(int sh_idx) {
     Elf64_Shdr* p_section_headers = p_prog_mmap->get_section_headers();
     static char ret_string[32];
     snprintf(ret_string, 32, "%d", p_section_headers[sh_idx].sh_type);
+
+    switch (p_section_headers[sh_idx].sh_type) {
+        case SHT_NULL:           return "Null Section";
+        case SHT_PROGBITS:       return "Application Specific";
+        case SHT_SYMTAB:         return "Symbol Table";
+        case SHT_STRTAB:         return "String Table";
+        case SHT_RELA:           return "Relocation Table w/ Addends";
+        case SHT_HASH:           return "Symbol Hash Table";
+        case SHT_DYNAMIC:        return "Dynamic Section";
+        case SHT_NOTE:           return "Note Section";
+        case SHT_NOBITS:         return "NOBITS (Empty Section)";
+        case SHT_REL:            return "Relocation Table (no Addends)";
+        case SHT_SHLIB:          return "Reserved Section (no semantics)";
+        case SHT_DYNSYM:         return "Dynamic Symbol Table";
+        case SHT_INIT_ARRAY:     return "Init Function Table";
+        case SHT_FINI_ARRAY:     return "Fini Function Table";
+        case SHT_PREINIT_ARRAY:  return "Pre-Init Function Table";
+        case SHT_GROUP:          return "Section Group";
+        case SHT_SYMTAB_SHNDX:   return "XINDEX Symbol Table";
+        default:                 break;
+    }
+
+    if ((p_section_headers[sh_idx].sh_type >= SHT_LOOS) && (p_section_headers[sh_idx].sh_type <= SHT_HIOS)) {
+        snprintf(ret_string, 64, "OS specific: 0x%x", p_section_headers[sh_idx].sh_type);        
+    } else if ((p_section_headers[sh_idx].sh_type >= SHT_LOPROC) && (p_section_headers[sh_idx].sh_type <= SHT_HIPROC)) {
+        snprintf(ret_string, 64, "Processor specific: 0x%x", p_section_headers[sh_idx].sh_type);        
+    } else if ((p_section_headers[sh_idx].sh_type >= SHT_LOUSER) && (p_section_headers[sh_idx].sh_type <= SHT_HIUSER)) {
+        snprintf(ret_string, 64, "Application specific: 0x%x", p_section_headers[sh_idx].sh_type);        
+    } else {
+        snprintf(ret_string, 64, "Invalid Type: 0x%x", p_section_headers[sh_idx].sh_type);        
+    }
 
     return ret_string;
 }
@@ -305,6 +355,10 @@ const char* Parser::get_e_version() {
 const char* Parser::get_e_ident() {
     Elf64_Ehdr* p_elf_header = p_prog_mmap->get_elf_header();
     static char ret_string[64];
+
+    if ( parser_verbose && !Parser::check_ELF64_magic(p_elf_header->e_ident, parser_verbose) ) {
+        cout << "WARN: file is not a valid ELF (magic is malformed)" << endl;
+    }
 
     uint8_t cur = 0;
     for (int i = 0; i < EI_NIDENT; i++)
